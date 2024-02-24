@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         std::process::exit(1);
     }
 
-    let query = &args[1];
+    let query = &args[1..].join(" ");
     let current_shell = env::var("SHELL")
         .map(|sh| sh.rsplit('/').next().unwrap_or(&sh).to_string())
         .unwrap_or_else(|_| "unknown".into());
