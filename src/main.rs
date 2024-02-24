@@ -1,6 +1,8 @@
+use colored::*;
 use reqwest;
 use serde::Deserialize;
 use serde_json::json;
+use spinners::{Spinner, Spinners};
 use std::{
     env,
     io::{self, Write},
@@ -61,6 +63,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         { "role": "user", "content": query },
     ]);
 
+    let mut sp = Spinner::new(Spinners::Dots, "thinking...".into());
+
     let client = reqwest::blocking::Client::new();
     let response = client
         .post(&format!("https://api.cloudflare.com/client/v4/accounts/{}/ai/run/@hf/thebloke/openhermes-2.5-mistral-7b-awq", account_id))
@@ -73,17 +77,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let api_response: ApiResponse = serde_json::from_str(&response_text)?;
     let command_response: CommandResponse = serde_json::from_str(&api_response.result.response)?;
 
-    println!("Command: {}", command_response.command);
-    println!("Explanation: {}", command_response.explanation);
+    sp.stop_with_message("".into());
 
-    print!("Do you want to execute this command? (y/n): ");
+    println!("Command: {}", command_response.command.green());
+    println!("Explanation: {}", command_response.explanation.italic());
+
+    print!("\nDo you want to execute this command? (y/n): ");
     io::stdout().flush()?;
 
     let mut choice = String::new();
     io::stdin().read_line(&mut choice)?;
 
     if choice.trim().eq_ignore_ascii_case("y") {
-        println!("Executing command...");
+        println!("{}", "Executing command...".cyan());
+
         let output = if cfg!(target_os = "windows") {
             Command::new("cmd")
                 .args(&["/C", &command_response.command])
@@ -97,7 +104,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         println!("{}", String::from_utf8_lossy(&output.stdout));
     } else {
-        println!("No action taken.");
+        println!("{}", "No action taken.".red());
     }
 
     Ok(())

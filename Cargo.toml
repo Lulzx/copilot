@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+colored = "2.1.0"
 reqwest = { version = "0.11.24", features = ["blocking", "json"] }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.114"
+spinners = "4.1.1"
